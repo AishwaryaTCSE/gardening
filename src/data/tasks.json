@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "title": "Water Snake Plant",
+    "type": "watering",
+    "plantId": 1,
+    "dueDate": "2023-11-24",
+    "priority": "high",
+    "completed": false,
+    "notes": "Check soil moisture before watering"
+  },
+  {
+    "id": 2,
+    "title": "Fertilize Monstera",
+    "type": "fertilizing",
+    "plantId": 2,
+    "dueDate": "2023-11-26",
+    "priority": "medium",
+    "completed": false,
+    "notes": "Use liquid fertilizer"
+  }
+]

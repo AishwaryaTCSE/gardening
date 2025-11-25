@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Snake Plant",
+    "species": "Sansevieria trifasciata",
+    "image": "/images/plants/snake-plant.jpg",
+    "location": "Living Room",
+    "healthStatus": "healthy",
+    "lastWatered": "2023-11-10",
+    "nextWatering": "2023-11-24",
+    "waterFrequency": 14,
+    "sunlight": "low",
+    "fertilizer": "monthly",
+    "notes": "Very low maintenance. Thrives in low light."
+  },
+  {
+    "id": 2,
+    "name": "Monstera Deliciosa",
+    "species": "Monstera deliciosa",
+    "image": "/images/plants/monstera.jpg",
+    "location": "Bedroom",
+    "healthStatus": "healthy",
+    "lastWatered": "2023-11-12",
+    "nextWatering": "2023-11-19",
+    "waterFrequency": 7,
+    "sunlight": "medium",
+    "fertilizer": "bi-weekly",
+    "notes": "Likes to climb. Mist leaves occasionally."
+  }
+]
