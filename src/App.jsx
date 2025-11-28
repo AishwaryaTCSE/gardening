@@ -5,6 +5,7 @@ import { TaskProvider } from './context/TaskContext';
 import { AppProvider } from './context/AppContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import PlantLibrary from './pages/PlantLibrary';
 import PlantDetail from './pages/PlantDetail';
@@ -50,22 +51,19 @@ const App = () => {
 
   return (
     <Router>
-      <AppProvider>
-        <PlantProvider>
-          <TaskProvider>
-            <div className="flex flex-col min-h-screen bg-gray-50">
-              <Navbar 
-                isMobileMenuOpen={isMobileMenuOpen} 
-                toggleMobileMenu={toggleMobileMenu} 
-              />
-              
-              <main className="flex-grow pt-16 pb-8 md:pt-20">
+      <PlantProvider>
+        <TaskProvider>
+          <AppProvider>
+            <div className="min-h-screen flex flex-col bg-gray-50">
+              <Navbar isMobileMenuOpen={isMobileMenuOpen} toggleMobileMenu={toggleMobileMenu} />
+              <main className="flex-grow">
                 <AnimatePresence mode="wait">
                   <Routes>
-                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/garden" element={<Dashboard />} />
                     <Route path="/plants" element={<PlantLibrary />} />
-                    <Route path="/plants/add" element={<AddEditPlant />} />
                     <Route path="/plants/:id" element={<PlantDetail />} />
+                    <Route path="/plants/add" element={<AddEditPlant />} />
                     <Route path="/plants/edit/:id" element={<AddEditPlant />} />
                     <Route path="/tasks" element={<TaskList />} />
                     <Route path="/tasks/add" element={<AddEditTask />} />
@@ -73,20 +71,18 @@ const App = () => {
                     <Route path="/journal" element={<Journal />} />
                     <Route path="/weather" element={<Weather />} />
                     <Route path="/community" element={<Community />} />
-                    <Route path="/garden" element={<GardenLayout />} />
+                    <Route path="/garden-layout" element={<GardenLayout />} />
                     <Route path="/pest-disease" element={<PestDisease />} />
-                    <Route path="/404" element={<NotFound />} />
-                    <Route path="*" element={<Navigate to="/404" replace />} />
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </AnimatePresence>
               </main>
-
               <Footer />
               <Alert />
             </div>
-          </TaskProvider>
-        </PlantProvider>
-      </AppProvider>
+          </AppProvider>
+        </TaskProvider>
+      </PlantProvider>
     </Router>
   );
 };
