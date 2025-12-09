@@ -1,16 +1,61 @@
-# React + Vite
+Gardening Guide & Planner
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A beginner-friendly Gardening Guide and Planner built to help users learn plant care, maintain gardens, track plant growth, and explore gardening tips. The project provides structured information, images, and tools that make gardening easy for everyone—from beginners to hobbyists.
 
-Currently, two official plugins are available:
+🌱 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Plant Dictionary: Browse plants with images, sunlight needs, watering schedule, soil type, and care tips.
+Garden Planner: Add plants, track growth, set watering reminders, and maintain a personalized garden list.
+Seasonal Tips: Monthly gardening suggestions based on weather and plant growth cycles.
+Beginner Tutorials: Step-by-step lessons on soil preparation, composting, tools, and plant care.
+Eco-Friendly Tips: Learn sustainable gardening practices like composting, recycling, and organic fertilizers.
 
-## React Compiler
+Responsive UI: Works on mobile, tablet, and desktop.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+📁 Project Structure
+gardening-project/
+│── public/
+│── src/
+│   ├── components/
+│   ├── pages/
+│   ├── assets/
+│   ├── hooks/
+│   └── App.jsx
+│── package.json
+│── README.md
 
-## Expanding the ESLint configuration
+🛠️ Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+React + Vite
+CSS / TailwindCSS (optional)
+JavaScript (ES6+)
+Firebase / Local Storage (optional for saving data)
+
+🚀 Getting Started
+1. Clone the repository
+git clone https://github.com/your-username/gardening-project.git
+cd gardening-project
+
+2. Install dependencies
+npm install
+
+3. Run the development server
+npm run dev
+
+📦 Build for Production
+npm run build
+
+🧩 Future Enhancements
+
+AI-based plant disease detection
+
+Weather API-based smart garden alerts
+
+User authentication and cloud storage
+
+Plant marketplace section
+
+🤝 Contributing
+
+Contributions are welcome!
+Feel free to open an issue or submit a pull request.
