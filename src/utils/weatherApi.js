@@ -1,10 +1,14 @@
-const API_KEY = process.env.REACT_APP_WEATHER_API_KEY;
-const BASE_URL = 'https://api.openweathermap.org/data/2.5';
+export const WEATHER_API_KEY =
+  import.meta.env.VITE_WEATHER_API_KEY ||
+  import.meta.env.REACT_APP_WEATHER_API_KEY ||
+  "";
+const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
 export const getCurrentWeather = async (location) => {
   try {
+    if (!WEATHER_API_KEY) throw new Error("Weather API key missing");
     const response = await fetch(
-      `${BASE_URL}/weather?q=${encodeURIComponent(location)}&appid=${API_KEY}&units=metric`
+      `${BASE_URL}/weather?q=${encodeURIComponent(location)}&appid=${WEATHER_API_KEY}&units=metric`
     );
     
     if (!response.ok) {
@@ -20,8 +24,9 @@ export const getCurrentWeather = async (location) => {
 
 export const getWeatherForecast = async (location, days = 5) => {
   try {
+    if (!WEATHER_API_KEY) throw new Error("Weather API key missing");
     const response = await fetch(
-      `${BASE_URL}/forecast?q=${encodeURIComponent(location)}&appid=${API_KEY}&units=metric&cnt=${days}`
+      `${BASE_URL}/forecast?q=${encodeURIComponent(location)}&appid=${WEATHER_API_KEY}&units=metric&cnt=${days}`
     );
     
     if (!response.ok) {
@@ -37,8 +42,9 @@ export const getWeatherForecast = async (location, days = 5) => {
 
 export const getWeatherByCoords = async (lat, lon) => {
   try {
+    if (!WEATHER_API_KEY) throw new Error("Weather API key missing");
     const response = await fetch(
-      `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+      `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`
     );
     
     if (!response.ok) {

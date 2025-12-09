@@ -1,5 +1,18 @@
-import { useState, useEffect } from 'react';
-import { FiDroplet, FiSun, FiWind, FiCloudRain, FiThermometer, FiCalendar } from 'react-icons/fi';
+import { useState } from 'react';
+import {
+  FiDroplet,
+  FiSun,
+  FiWind,
+  FiCloudRain,
+  FiThermometer,
+  FiCalendar,
+  FiSearch,
+} from "react-icons/fi";
+import {
+  getCurrentWeather,
+  getWeatherForecast,
+  WEATHER_API_KEY,
+} from "../utils/weatherApi";
 
 const Weather = () => {
   const [location, setLocation] = useState('');
@@ -7,46 +20,141 @@ const Weather = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [forecast, setForecast] = useState([]);
+  const [suggestedCrops, setSuggestedCrops] = useState([]);
+  const [searchedLocation, setSearchedLocation] = useState('');
 
-  // Mock weather data - in a real app, you would fetch this from a weather API
-  const mockWeather = {
-    location: 'New York, NY',
+  const fallbackWeather = {
+    location: 'Sampleville',
     current: {
-      temp: 72,
+      temp: 26,
       condition: 'Partly Cloudy',
-      humidity: 65,
-      wind: 8,
-      precipitation: 10,
+      humidity: 62,
+      wind: 5,
+      precipitation: 12,
       icon: 'partly-cloudy-day',
-      feelsLike: 74
+      feelsLike: 27,
+      rainfall: 2.4,
     },
     today: {
-      high: 78,
-      low: 65,
-      sunrise: '6:45 AM',
-      sunset: '7:30 PM'
+      high: 28,
+      low: 19,
+      sunrise: '6:20 AM',
+      sunset: '6:55 PM',
+    },
+  };
+
+  const fallbackForecast = [
+    { day: 'Mon', high: 28, low: 19, condition: 'partly-cloudy-day', precipitation: 10 },
+    { day: 'Tue', high: 29, low: 20, condition: 'clear-day', precipitation: 5 },
+    { day: 'Wed', high: 26, low: 18, condition: 'rain', precipitation: 70 },
+    { day: 'Thu', high: 24, low: 17, condition: 'cloudy', precipitation: 40 },
+    { day: 'Fri', high: 25, low: 18, condition: 'partly-cloudy-day', precipitation: 15 },
+  ];
+
+  const handleSearch = async () => {
+    if (!location.trim()) {
+      setError("Enter a location to search.");
+      return;
+    }
+    setError(null);
+    setLoading(true);
+
+    // If no API key, skip network calls and use fallback immediately.
+    if (!WEATHER_API_KEY) {
+      setWeather(fallbackWeather);
+      setForecast(fallbackForecast);
+      setSuggestedCrops(buildCropSuggestions(fallbackWeather));
+      setSearchedLocation(fallbackWeather.location);
+      setError("Using sample data; set VITE_WEATHER_API_KEY for live weather.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const current = await getCurrentWeather(location.trim());
+      const next = await getWeatherForecast(location.trim(), 5);
+      const normalized = normalizeWeather(current, next);
+      setWeather(normalized.current);
+      setForecast(normalized.forecast);
+      setSuggestedCrops(buildCropSuggestions(normalized.current));
+      setSearchedLocation(normalized.current.location);
+    } catch (err) {
+      // fall back to sample data so UI still works
+      setWeather(fallbackWeather);
+      setForecast(fallbackForecast);
+      setSuggestedCrops(buildCropSuggestions(fallbackWeather));
+      setError("Using sample data; live weather unavailable.");
+      setSearchedLocation(fallbackWeather.location);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const mockForecast = [
-    { day: 'Mon', high: 78, low: 65, condition: 'partly-cloudy-day', precipitation: 10 },
-    { day: 'Tue', high: 82, low: 68, condition: 'clear-day', precipitation: 0 },
-    { day: 'Wed', high: 75, low: 62, condition: 'rain', precipitation: 80 },
-    { day: 'Thu', high: 70, low: 60, condition: 'cloudy', precipitation: 40 },
-    { day: 'Fri', high: 74, low: 63, condition: 'partly-cloudy-day', precipitation: 20 }
-  ];
+  const normalizeWeather = (current, forecastData) => {
+    const cur = {
+      location: `${current.name}, ${current.sys?.country || ''}`.trim(),
+      current: {
+        temp: Math.round(current.main?.temp ?? 0),
+        condition: current.weather?.[0]?.description || 'Unknown',
+        humidity: current.main?.humidity ?? 0,
+        wind: Math.round(current.wind?.speed ?? 0),
+        precipitation: Math.round((current.rain?.['1h'] ?? current.rain?.['3h'] ?? 0) * 10) || 0,
+        rainfall: current.rain?.['1h'] ?? current.rain?.['3h'] ?? 0,
+        icon: current.weather?.[0]?.main?.toLowerCase() || 'clear-day',
+        feelsLike: Math.round(current.main?.feels_like ?? current.main?.temp ?? 0),
+      },
+      today: {
+        high: Math.round(current.main?.temp_max ?? current.main?.temp ?? 0),
+        low: Math.round(current.main?.temp_min ?? current.main?.temp ?? 0),
+        sunrise: current.sys?.sunrise
+          ? new Date(current.sys.sunrise * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : '--',
+        sunset: current.sys?.sunset
+          ? new Date(current.sys.sunset * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : '--',
+      },
+    };
 
-  // Simulate loading weather data
-  useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => {
-      setWeather(mockWeather);
-      setForecast(mockForecast);
-      setLoading(false);
-    }, 1000);
+    const fc = (forecastData?.list || []).slice(0, 5).map((entry) => {
+      const day = new Date(entry.dt * 1000).toLocaleDateString(undefined, { weekday: 'short' });
+      return {
+        day,
+        high: Math.round(entry.main?.temp_max ?? entry.main?.temp ?? 0),
+        low: Math.round(entry.main?.temp_min ?? entry.main?.temp ?? 0),
+        condition: entry.weather?.[0]?.main?.toLowerCase() || 'partly-cloudy-day',
+        precipitation: Math.round((entry.pop ?? 0) * 100),
+      };
+    });
 
-    return () => clearTimeout(timer);
-  }, []);
+    return { current: cur, forecast: fc };
+  };
+
+  const buildCropSuggestions = (data) => {
+    const items = [];
+    const temp = data.current?.temp ?? 0;
+    const humidity = data.current?.humidity ?? 0;
+    const rainfall = data.current?.rainfall ?? 0;
+
+    if (temp >= 20 && temp <= 30 && humidity > 50) {
+      items.push('Tomato - warm temps and moderate humidity suit fruit set.');
+    }
+    if (temp >= 18 && temp <= 28 && rainfall >= 2) {
+      items.push('Corn - steady warmth plus moisture promotes growth.');
+    }
+    if (temp <= 25 && humidity >= 60) {
+      items.push('Lettuce - prefers cooler, humid conditions to stay crisp.');
+    }
+    if (rainfall < 2) {
+      items.push('Millet - drought-tolerant pick when rain is limited.');
+    }
+    if (humidity >= 70) {
+      items.push('Rice - thrives with high humidity and ample water.');
+    }
+    while (items.length < 5) {
+      items.push('Beans - resilient nitrogen-fixer for varied conditions.');
+    }
+    return items.slice(0, 5);
+  };
 
   const getWeatherIcon = (condition) => {
     const icons = {
@@ -66,21 +174,14 @@ const Weather = () => {
 
   const getGardeningTip = () => {
     if (!weather) return 'Loading gardening tips...';
-    
     const temp = weather.current.temp;
     const precipitation = weather.current.precipitation;
 
-    if (precipitation > 50) {
-      return 'Heavy rain expected - check your garden for proper drainage.';
-    } else if (temp > 85) {
-      return 'Hot day ahead - water plants in the early morning or late evening.';
-    } else if (temp < 40) {
-      return 'Cold temperatures expected - protect sensitive plants from frost.';
-    } else if (precipitation < 10 && temp > 70) {
-      return 'Dry and warm - make sure to water your plants thoroughly.';
-    } else {
-      return 'Great weather for gardening! Consider planting or transplanting.';
-    }
+    if (precipitation > 50) return 'Heavy rain expected - check drainage and staking.';
+    if (temp > 32) return 'Hot day ahead - water early/late and add mulch.';
+    if (temp < 10) return 'Cold snap coming - protect sensitive plants from frost.';
+    if (precipitation < 10 && temp > 22) return 'Dry and warm - deep water and consider shade cloth.';
+    return 'Great weather for gardening! Ideal for planting or transplanting.';
   };
 
   const getPlantingRecommendations = () => {
@@ -107,8 +208,8 @@ const Weather = () => {
 
         {/* Search and Location */}
         <div className="mb-8">
-          <div className="max-w-md mx-auto">
-            <div className="relative">
+          <div className="max-w-2xl mx-auto flex flex-col md:flex-row gap-3 items-center">
+            <div className="relative flex-1 w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FiSun className="h-5 w-5 text-gray-400" />
               </div>
@@ -120,7 +221,18 @@ const Weather = () => {
                 onChange={(e) => setLocation(e.target.value)}
               />
             </div>
+            <button
+              onClick={handleSearch}
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-md shadow hover:bg-green-700 transition disabled:opacity-60"
+              disabled={loading}
+            >
+              <FiSearch className="mr-2" />
+              {loading ? 'Searching...' : 'Search'}
+            </button>
           </div>
+          {error && (
+            <p className="text-center text-sm text-red-600 mt-2">{error}</p>
+          )}
         </div>
 
         {loading ? (
@@ -135,12 +247,16 @@ const Weather = () => {
               <div className="p-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{weather.location}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {searchedLocation || weather.location}
+                    </h2>
                     <p className="text-gray-500">Current Weather</p>
                   </div>
                   <div className="mt-4 md:mt-0">
                     <div className="flex items-center">
-                      <span className="text-5xl font-light">{weather.current.temp}°</span>
+                      <span className="text-5xl font-light">
+                        {weather.current.temp}°
+                      </span>
                       <span className="ml-2 text-4xl">{getWeatherIcon(weather.current.icon)}</span>
                     </div>
                     <p className="text-gray-600">{weather.current.condition}</p>
@@ -174,6 +290,15 @@ const Weather = () => {
                     <div>
                       <p className="text-sm text-gray-500">Precip</p>
                       <p className="font-medium">{weather.current.precipitation}%</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <FiCloudRain className="h-5 w-5 text-blue-400 mr-2" />
+                    <div>
+                      <p className="text-sm text-gray-500">Rainfall</p>
+                      <p className="font-medium">
+                        {weather.current.rainfall ?? 0} mm
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -221,7 +346,7 @@ const Weather = () => {
             </div>
 
             {/* Gardening Tips */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="bg-green-50 rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Gardening Tip</h2>
                 <div className="flex items-start">
@@ -251,6 +376,18 @@ const Weather = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Best Crops Now</h2>
+                <p className="text-gray-600 mb-3">
+                  Based on current temperature, humidity, and rainfall.
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  {suggestedCrops.map((crop, idx) => (
+                    <li key={idx}>{crop}</li>
+                  ))}
+                </ul>
               </div>
             </div>
           </>

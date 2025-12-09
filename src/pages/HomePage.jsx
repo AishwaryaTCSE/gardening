@@ -19,6 +19,8 @@ import {
   FiAward
 } from 'react-icons/fi';
 import { useEffect, useRef, useState } from 'react';
+import { usePlants } from '../context/PlantContext';
+import { identifyPlantByImageDataUrl } from '../utils/plantIdApi';
 
 const HomePage = () => {
   // State for interactive features
@@ -34,6 +36,67 @@ const HomePage = () => {
     humidity: 65,
     wind: 12
   });
+
+  // Plant Identifier state
+  const { plants } = usePlants();
+  const [uploadedImage, setUploadedImage] = useState('');
+  const [isIdentifying, setIsIdentifying] = useState(false);
+  const [identifyError, setIdentifyError] = useState('');
+  const [identifiedSuggestions, setIdentifiedSuggestions] = useState([]);
+  const fileInputRef = useRef(null);
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setIdentifyError('');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      setUploadedImage(dataUrl);
+      identifyUploadedImage(dataUrl, file.name || '');
+    };
+    reader.onerror = () => {
+      setIdentifyError('Failed to read image file.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const identifyUploadedImage = async (dataUrl, fileNameLike) => {
+    setIsIdentifying(true);
+    setIdentifyError('');
+    const apiKey = import.meta.env?.VITE_PLANT_ID_API_KEY;
+
+    if (apiKey) {
+      const { suggestions, error } = await identifyPlantByImageDataUrl(dataUrl, apiKey);
+      if (error) {
+        setIdentifyError(error);
+      }
+      // If API returned suggestions use them; otherwise fallback
+      if (suggestions && suggestions.length) {
+        setIdentifiedSuggestions(suggestions);
+        setIsIdentifying(false);
+        return;
+      }
+    }
+
+    // Fallback mock if no API key or API yields nothing
+    const name = (fileNameLike || '').toLowerCase();
+    const matches = plants
+      .filter((p) => p.name && name.includes(p.name.toLowerCase()))
+      .slice(0, 3);
+    const fallback = plants.slice(0, 3);
+    setTimeout(() => {
+      setIdentifiedSuggestions(matches.length ? matches : fallback);
+      setIsIdentifying(false);
+    }, 500);
+  };
+
+  const clearUploadedImage = () => {
+    setUploadedImage('');
+    setIdentifiedSuggestions([]);
+    setIdentifyError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   // Refs for smooth scrolling
   const topRef = useRef(null);
@@ -275,9 +338,73 @@ const HomePage = () => {
                 </div>
               )}
             </div>
-            <button className="w-full bg-green-100 text-green-700 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors flex items-center justify-center">
-              <FiImage className="mr-2" /> Upload Plant Photo
-            </button>
+            <div className="space-y-4">
+              <input
+                ref={fileInputRef}
+                id="plant-photo-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                className="w-full bg-green-100 text-green-700 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors flex items-center justify-center"
+              >
+                <FiImage className="mr-2" /> Upload Plant Photo
+              </button>
+
+              {uploadedImage && (
+                <div className="mt-2">
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={uploadedImage}
+                      alt="Uploaded plant"
+                      className="h-24 w-24 rounded-md object-cover border"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">Identification Suggestions</span>
+                        <button
+                          type="button"
+                          onClick={clearUploadedImage}
+                          className="text-xs text-red-600 hover:text-red-700"
+                        >
+                          Remove photo
+                        </button>
+                      </div>
+                      {isIdentifying ? (
+                        <div className="text-sm text-gray-500">Analyzing photo…</div>
+                      ) : identifyError ? (
+                        <div className="text-sm text-red-600">{identifyError}</div>
+                      ) : identifiedSuggestions.length ? (
+                        <ul className="space-y-1">
+                          {identifiedSuggestions.map((p) => (
+                            <li key={p.id} className="flex items-center gap-3 text-sm">
+                              <span className="inline-block h-6 w-6 rounded bg-gray-200" />
+                              <div className="flex-1">
+                                <div className="font-medium">
+                                  {p.name || 'Unknown'}
+                                </div>
+                                {p.species && (
+                                  <div className="text-xs text-gray-500">{p.species}</div>
+                                )}
+                              </div>
+                              {typeof p.probability === 'number' && (
+                                <span className="text-xs text-gray-500">{Math.round(p.probability * 100)}% match</span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="text-sm text-gray-500">No suggestions found.</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Weather Widget */}
