@@ -1,28 +1,37 @@
-import { useState, useEffect } from 'react';
-import { FiSun, FiCloud, FiCloudRain, FiCloudSnow, FiWind, FiCloud } from 'react-icons/fi';
+import { useState, useEffect } from "react";
+import { FiSun, FiCloud, FiCloudRain, FiCloudSnow, FiWind, FiDroplet } from "react-icons/fi";
+import { getCurrentWeather, WEATHER_API_KEY } from "../utils/weatherApi";
 
 const WeatherWidget = () => {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // This is a mock implementation - in a real app, you would fetch from a weather API
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // Mock weather data
-        const mockWeather = {
-          temperature: 22,
-          condition: 'Sunny',
-          humidity: 65,
-          windSpeed: 12,
-          icon: 'sun'
-        };
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        setWeather(mockWeather);
+        if (!WEATHER_API_KEY) {
+          setWeather({
+            temperature: 24,
+            condition: "Sunny",
+            humidity: 60,
+            windSpeed: 10,
+            icon: "sun",
+            location: "Demo city",
+          });
+          setLoading(false);
+          return;
+        }
+
+        const data = await getCurrentWeather("Bengaluru");
+        setWeather({
+          temperature: Math.round(data.main?.temp ?? 0),
+          condition: data.weather?.[0]?.description || "Unknown",
+          humidity: data.main?.humidity ?? 0,
+          windSpeed: Math.round(data.wind?.speed ?? 0),
+          icon: data.weather?.[0]?.main?.toLowerCase() || "cloudy",
+          location: data.name || "Weather",
+        });
         setLoading(false);
       } catch (err) {
         setError('Failed to load weather data');
@@ -33,17 +42,20 @@ const WeatherWidget = () => {
     fetchWeather();
   }, []);
 
-  const getWeatherIcon = (condition) => {
+  const getWeatherIcon = (condition = "") => {
     switch (condition.toLowerCase()) {
-      case 'sunny':
+      case "sunny":
+      case "clear":
         return <FiSun className="h-8 w-8 text-yellow-400" />;
-      case 'cloudy':
+      case "cloudy":
         return <FiCloud className="h-8 w-8 text-gray-400" />;
-      case 'rainy':
+      case "rainy":
+      case "rain":
         return <FiCloudRain className="h-8 w-8 text-blue-400" />;
-      case 'snowy':
+      case "snowy":
+      case "snow":
         return <FiCloudSnow className="h-8 w-8 text-blue-200" />;
-      case 'windy':
+      case "windy":
         return <FiWind className="h-8 w-8 text-gray-500" />;
       default:
         return <FiCloud className="h-8 w-8 text-gray-400" />;
@@ -72,7 +84,7 @@ const WeatherWidget = () => {
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-medium text-gray-900">Weather</h3>
+            <h3 className="text-lg font-medium text-gray-900">{weather?.location || "Weather"}</h3>
             <p className="text-sm text-gray-500">Current conditions</p>
           </div>
           {weather && getWeatherIcon(weather.condition)}
@@ -94,7 +106,7 @@ const WeatherWidget = () => {
               </div>
               <div className="flex items-center text-sm text-gray-500">
                 <FiWind className="h-4 w-4 mr-1 text-gray-400" />
-                <span>Wind: {weather.windSpeed} km/h</span>
+                <span>Wind: {weather.windSpeed} m/s</span>
               </div>
             </div>
           </div>

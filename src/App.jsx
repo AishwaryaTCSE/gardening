@@ -22,6 +22,7 @@ import Community from "./pages/Community";
 import GardenLayout from "./pages/GardenLayout";
 import PestDisease from "./pages/PestDisease";
 import NotFound from "./pages/NotFound";
+import SmartCropFinder from "./pages/SmartCropFinder";
 
 const appShellStyle = {
   minHeight: "100vh",
@@ -110,6 +111,7 @@ export default function App() {
                   <Route path="/community" element={<Community />} />
                   <Route path="/garden-layout" element={<GardenLayout />} />
                   <Route path="/pest-disease" element={<PestDisease />} />
+                  <Route path="/smart-crop" element={<SmartCropFinder />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

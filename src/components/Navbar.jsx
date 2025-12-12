@@ -29,6 +29,7 @@ const defaultNavItems = [
   { label: "Pests", path: "/pests" },
   { label: "Soil", path: "/soil" },
   { label: "Weather", path: "/weather" },
+  { label: "Smart Crop", path: "/smart-crop" },
   { label: "Community", path: "/community" },
   { label: "Plants", path: "/plants" },
   { label: "Garden", path: "/garden" },

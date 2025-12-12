@@ -13,6 +13,7 @@ import {
   getWeatherForecast,
   WEATHER_API_KEY,
 } from "../utils/weatherApi";
+import { buildCropPlan } from "../utils/cropEngine";
 
 const Weather = () => {
   const [location, setLocation] = useState('');
@@ -22,6 +23,7 @@ const Weather = () => {
   const [forecast, setForecast] = useState([]);
   const [suggestedCrops, setSuggestedCrops] = useState([]);
   const [searchedLocation, setSearchedLocation] = useState('');
+  const [regionProfile, setRegionProfile] = useState(null);
 
   const fallbackWeather = {
     location: 'Sampleville',
@@ -63,7 +65,9 @@ const Weather = () => {
     if (!WEATHER_API_KEY) {
       setWeather(fallbackWeather);
       setForecast(fallbackForecast);
-      setSuggestedCrops(buildCropSuggestions(fallbackWeather));
+      const plan = mapToCropPlan(fallbackWeather);
+      setSuggestedCrops(plan.recommendations);
+      setRegionProfile(plan.region);
       setSearchedLocation(fallbackWeather.location);
       setError("Using sample data; set VITE_WEATHER_API_KEY for live weather.");
       setLoading(false);
@@ -76,13 +80,17 @@ const Weather = () => {
       const normalized = normalizeWeather(current, next);
       setWeather(normalized.current);
       setForecast(normalized.forecast);
-      setSuggestedCrops(buildCropSuggestions(normalized.current));
+      const plan = mapToCropPlan(normalized.current);
+      setSuggestedCrops(plan.recommendations);
+      setRegionProfile(plan.region);
       setSearchedLocation(normalized.current.location);
     } catch (err) {
       // fall back to sample data so UI still works
       setWeather(fallbackWeather);
       setForecast(fallbackForecast);
-      setSuggestedCrops(buildCropSuggestions(fallbackWeather));
+      const plan = mapToCropPlan(fallbackWeather);
+      setSuggestedCrops(plan.recommendations);
+      setRegionProfile(plan.region);
       setError("Using sample data; live weather unavailable.");
       setSearchedLocation(fallbackWeather.location);
     } finally {
@@ -129,76 +137,24 @@ const Weather = () => {
     return { current: cur, forecast: fc };
   };
 
-  const buildCropSuggestions = (data) => {
-    const items = [];
-    const temp = data.current?.temp ?? 0;
-    const humidity = data.current?.humidity ?? 0;
-    const rainfall = data.current?.rainfall ?? 0;
-
-    const add = (name, reason, yieldRange, water, fertilizer, months) =>
-      items.push({ name, reason, yieldRange, water, fertilizer, months });
-
-    if (temp >= 20 && temp <= 30 && humidity > 50) {
-      add(
-        'Tomato',
-        'Warm temps and moderate humidity suit fruit set.',
-        '20-30 t/ha',
-        'Medium, consistent',
-        'NPK 10-10-10 at planting',
-        'Feb-May, Aug-Oct'
-      );
-    }
-    if (temp >= 18 && temp <= 28 && rainfall >= 2) {
-      add(
-        'Corn',
-        'Steady warmth plus moisture promotes growth.',
-        '4-8 t/ha',
-        'High during tasseling',
-        'NPK 15-15-15 split doses',
-        'Mar-Jun'
-      );
-    }
-    if (temp <= 25 && humidity >= 60) {
-      add(
-        'Lettuce',
-        'Prefers cooler, humid conditions to stay crisp.',
-        '12-18 t/ha',
-        'Low to medium',
-        'Balanced 10-5-5',
-        'Sept-Mar'
-      );
-    }
-    if (rainfall < 2) {
-      add(
-        'Millet',
-        'Drought-tolerant pick when rain is limited.',
-        '1-2.5 t/ha',
-        'Low',
-        'Light N at sowing',
-        'May-Aug'
-      );
-    }
-    if (humidity >= 70) {
-      add(
-        'Rice',
-        'Thrives with high humidity and ample water.',
-        '3-6 t/ha',
-        'Flooded/standing',
-        'NPK 16-16-8 basal',
-        'Jun-Sep'
-      );
-    }
-    while (items.length < 5) {
-      add(
-        'Beans',
-        'Resilient nitrogen-fixer for varied conditions.',
-        '1.5-3 t/ha',
-        'Medium',
-        'Low N; add P & K',
-        'Mar-Jun, Aug-Oct'
-      );
-    }
-    return items.slice(0, 5);
+  const mapToCropPlan = (data) => {
+    const current = data.current || {};
+    const payload = {
+      city: data.location || searchedLocation || "",
+      country: "",
+      temp: current.temp ?? 0,
+      humidity: current.humidity ?? 0,
+      rainfall:
+        typeof current.rainfall === "number"
+          ? current.rainfall
+          : typeof current.precipitation === "number"
+          ? current.precipitation / 10
+          : 0,
+      wind: current.wind ?? current.windSpeed ?? 0,
+      elevation: 0,
+      description: current.condition || "",
+    };
+    return buildCropPlan(payload, data.location || location);
   };
 
   const getWeatherIcon = (condition) => {
@@ -426,21 +382,31 @@ const Weather = () => {
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Best Crops Now</h2>
                 <p className="text-gray-600 mb-3">
-                  Based on current temperature, humidity, and rainfall.
+                  Based on live temperature, humidity, rainfall, wind, and local terrain.
                 </p>
+                {regionProfile && (
+                  <div className="mb-4 text-sm text-gray-700">
+                    Region profile: {regionProfile.regionType} · Season {regionProfile.season}
+                  </div>
+                )}
                 <div className="divide-y divide-gray-200">
                   {suggestedCrops.map((crop, idx) => (
                     <div key={idx} className="py-3">
-                      <p className="font-semibold text-gray-800">{crop.name}</p>
-                      <p className="text-sm text-gray-600">{crop.reason}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-gray-800">{crop.name}</p>
+                        <span className="text-xs rounded-full px-2 py-1 bg-green-50 text-green-700 border border-green-200">
+                          {crop.suitability}/100
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{crop.reason}</p>
                       <p className="text-sm text-gray-700 mt-1">
-                        <span className="font-medium">Yield:</span> {crop.yieldRange} ·{" "}
+                        <span className="font-medium">Yield:</span> {crop.yield} ·{" "}
                         <span className="font-medium">Water:</span> {crop.water} ·{" "}
                         <span className="font-medium">Fertilizer:</span> {crop.fertilizer}
                       </p>
-                      <p className="text-sm text-gray-700">
-                        <span className="font-medium">Best months:</span> {crop.months}
-                      </p>
+                      {!!crop.risks?.length && (
+                        <p className="text-xs text-orange-700 mt-1">Risk: {crop.risks.join(", ")}</p>
+                      )}
                     </div>
                   ))}
                 </div>

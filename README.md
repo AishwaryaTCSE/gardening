@@ -42,6 +42,16 @@ npm install
 3. Run the development server
 npm run dev
 
+🔑 Environment Setup (AI + Weather)
+- AI (frontend-only, key is exposed; use for local/dev):
+  - Create `.env.local` in the project root with:
+    - `VITE_OPENAI_DIRECT=true`
+    - `VITE_OPENAI_API_KEY=sk-your-key-here`
+- Safer (if you add any backend/serverless proxy later):
+  - Set `VITE_AI_PROXY=https://your-proxy.example.com/api/ai-chat`
+- Weather (optional, otherwise demo weather is used):
+  - `VITE_WEATHER_API_KEY=your-openweather-key`
+
 📦 Build for Production
 npm run build
 

@@ -1,0 +1,51 @@
+Bad request: Unknown modifier: modifiers=[`classification_level=species`]. Available modifiers: [classification_level=`all`, classification_level=`genus`, classification_level=`species`, classification_raw=true, disease_model=`full`, disease_model=`general`, health=`all`, health=`auto`, health=`only`, health=`probability`, similar_images=true, symptoms=true]
+Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+soilApi.js:65 Sending request to: https://api.plant.id/v3/identification
+soilApi.js:66 Headers: {Content-Type: 'application/json', Api-Key: 'jiDPlsRd41N0HZLUKcdAVDPL3plZFs5ohSbpxkFtc65nYG4qew'}
+soilApi.js:67 Payload: {images: Array(1), similar_images: true, modifiers: Array(1), language: 'en'}
+soilApi.js:72  POST https://api.plant.id/v3/identification 400 (Bad Request)
+detectSoilByImage @ soilApi.js:72
+await in detectSoilByImage
+handleAnalyzeSoil @ Soil.jsx:95
+executeDispatch @ react-dom_client.js?v=3edf5551:13622
+runWithFiberInDEV @ react-dom_client.js?v=3edf5551:997
+processDispatchQueue @ react-dom_client.js?v=3edf5551:13658
+(anonymous) @ react-dom_client.js?v=3edf5551:14071
+batchedUpdates$1 @ react-dom_client.js?v=3edf5551:2626
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=3edf5551:13763
+dispatchEvent @ react-dom_client.js?v=3edf5551:16784
+dispatchDiscreteEvent @ react-dom_client.js?v=3edf5551:16765
+<button>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=3edf5551:247
+Soil @ Soil.jsx:153
+react_stack_bottom_frame @ react-dom_client.js?v=3edf5551:18509
+renderWithHooksAgain @ react-dom_client.js?v=3edf5551:5729
+renderWithHooks @ react-dom_client.js?v=3edf5551:5665
+updateFunctionComponent @ react-dom_client.js?v=3edf5551:7475
+beginWork @ react-dom_client.js?v=3edf5551:8525
+runWithFiberInDEV @ react-dom_client.js?v=3edf5551:997
+performUnitOfWork @ react-dom_client.js?v=3edf5551:12561
+workLoopSync @ react-dom_client.js?v=3edf5551:12424
+renderRootSync @ react-dom_client.js?v=3edf5551:12408
+performWorkOnRoot @ react-dom_client.js?v=3edf5551:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=3edf5551:13505
+performWorkUntilDeadline @ react-dom_client.js?v=3edf5551:36
+<Soil>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=3edf5551:247
+App @ App.jsx:97
+react_stack_bottom_frame @ react-dom_client.js?v=3edf5551:18509
+renderWithHooksAgain @ react-dom_client.js?v=3edf5551:5729
+renderWithHooks @ react-dom_client.js?v=3edf5551:5665
+updateFunctionComponent @ react-dom_client.js?v=3edf5551:7475
+beginWork @ react-dom_client.js?v=3edf5551:8525
+runWithFiberInDEV @ react-dom_client.js?v=3edf5551:997
+performUnitOfWork @ react-dom_client.js?v=3edf5551:12561
+workLoopSync @ react-dom_client.js?v=3edf5551:12424
+renderRootSync @ react-dom_client.js?v=3edf5551:12408
+performWorkOnRoot @ react-dom_client.js?v=3edf5551:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=3edf5551:13505
+performWorkUntilDeadline @ react-dom_client.js?v=3edf5551:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=3edf5551:247
+(anonymous) @ main.jsx:8Understand this error
+soilApi.js:99 API Error: {status: 400, statusText: 'Bad Request', error: {…}, request: {…}}

@@ -95,9 +95,8 @@ export default function Soil() {
       const result = await detectSoilByImage(imageFile);
       if (result.error) {
         setSoilError(result.error);
-      } else {
-        setSoilResult(result);
       }
+      setSoilResult(result);
     } catch (error) {
       setSoilError(error.message || "Failed to analyze soil. Please try again.");
     } finally {
@@ -165,11 +164,17 @@ export default function Soil() {
 
         {soilError && <div style={errorStyle}>{soilError}</div>}
 
-        {soilResult && !soilResult.error && (
+        {soilResult && (
           <div style={resultCardStyle}>
             <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "16px", color: "#14532d" }}>
               Analysis Results
             </h3>
+
+            {soilResult.error && (
+              <div style={{ ...errorStyle, marginBottom: "12px" }}>
+                {soilResult.error}
+              </div>
+            )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div>
