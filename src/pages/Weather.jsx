@@ -135,23 +135,68 @@ const Weather = () => {
     const humidity = data.current?.humidity ?? 0;
     const rainfall = data.current?.rainfall ?? 0;
 
+    const add = (name, reason, yieldRange, water, fertilizer, months) =>
+      items.push({ name, reason, yieldRange, water, fertilizer, months });
+
     if (temp >= 20 && temp <= 30 && humidity > 50) {
-      items.push('Tomato - warm temps and moderate humidity suit fruit set.');
+      add(
+        'Tomato',
+        'Warm temps and moderate humidity suit fruit set.',
+        '20-30 t/ha',
+        'Medium, consistent',
+        'NPK 10-10-10 at planting',
+        'Feb-May, Aug-Oct'
+      );
     }
     if (temp >= 18 && temp <= 28 && rainfall >= 2) {
-      items.push('Corn - steady warmth plus moisture promotes growth.');
+      add(
+        'Corn',
+        'Steady warmth plus moisture promotes growth.',
+        '4-8 t/ha',
+        'High during tasseling',
+        'NPK 15-15-15 split doses',
+        'Mar-Jun'
+      );
     }
     if (temp <= 25 && humidity >= 60) {
-      items.push('Lettuce - prefers cooler, humid conditions to stay crisp.');
+      add(
+        'Lettuce',
+        'Prefers cooler, humid conditions to stay crisp.',
+        '12-18 t/ha',
+        'Low to medium',
+        'Balanced 10-5-5',
+        'Sept-Mar'
+      );
     }
     if (rainfall < 2) {
-      items.push('Millet - drought-tolerant pick when rain is limited.');
+      add(
+        'Millet',
+        'Drought-tolerant pick when rain is limited.',
+        '1-2.5 t/ha',
+        'Low',
+        'Light N at sowing',
+        'May-Aug'
+      );
     }
     if (humidity >= 70) {
-      items.push('Rice - thrives with high humidity and ample water.');
+      add(
+        'Rice',
+        'Thrives with high humidity and ample water.',
+        '3-6 t/ha',
+        'Flooded/standing',
+        'NPK 16-16-8 basal',
+        'Jun-Sep'
+      );
     }
     while (items.length < 5) {
-      items.push('Beans - resilient nitrogen-fixer for varied conditions.');
+      add(
+        'Beans',
+        'Resilient nitrogen-fixer for varied conditions.',
+        '1.5-3 t/ha',
+        'Medium',
+        'Low N; add P & K',
+        'Mar-Jun, Aug-Oct'
+      );
     }
     return items.slice(0, 5);
   };
@@ -383,11 +428,22 @@ const Weather = () => {
                 <p className="text-gray-600 mb-3">
                   Based on current temperature, humidity, and rainfall.
                 </p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                <div className="divide-y divide-gray-200">
                   {suggestedCrops.map((crop, idx) => (
-                    <li key={idx}>{crop}</li>
+                    <div key={idx} className="py-3">
+                      <p className="font-semibold text-gray-800">{crop.name}</p>
+                      <p className="text-sm text-gray-600">{crop.reason}</p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        <span className="font-medium">Yield:</span> {crop.yieldRange} ·{" "}
+                        <span className="font-medium">Water:</span> {crop.water} ·{" "}
+                        <span className="font-medium">Fertilizer:</span> {crop.fertilizer}
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        <span className="font-medium">Best months:</span> {crop.months}
+                      </p>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             </div>
           </>

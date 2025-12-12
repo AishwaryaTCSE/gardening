@@ -25,15 +25,14 @@ const linkBaseStyle = {
 };
 
 const defaultNavItems = [
-  { label: "Home", path: "/" },
+  { label: "Dashboard", path: "/dashboard" },
   { label: "Pests", path: "/pests" },
   { label: "Soil", path: "/soil" },
-  { label: "Dashboard", path: "/dashboard" },
+  { label: "Weather", path: "/weather" },
+  { label: "Community", path: "/community" },
   { label: "Plants", path: "/plants" },
   { label: "Garden", path: "/garden" },
   { label: "Journal", path: "/journal" },
-  { label: "Weather", path: "/weather" },
-  { label: "Community", path: "/community" },
 ];
 
 export default function Navbar({ navItems }) {

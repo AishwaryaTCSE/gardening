@@ -29,7 +29,7 @@ export async function detectDisease(imageFile) {
     const base64 = await fileToBase64(imageFile);
     const payload = {
       images: [base64],
-      similar_images: true,
+      modifiers: ["health=all", "similar_images", "classification_level=species"],
       disease_details: ["description", "treatment"],
       language: "en",
     };
@@ -50,6 +50,10 @@ export async function detectDisease(imageFile) {
 
     const data = await response.json();
     const disease = data?.result?.diseases?.[0];
+    const preventive =
+      disease?.class?.preventive_measures ||
+      disease?.disease_details?.prevention ||
+      "";
     const treatment =
       disease?.treatment?.[0]?.description ||
       disease?.treatment?.advice ||
@@ -61,6 +65,7 @@ export async function detectDisease(imageFile) {
       name: disease?.name || "Unknown disease",
       confidence: disease?.probability ? Number(disease.probability) * 100 : 0,
       remedy: treatment || "No remedy information provided.",
+      preventive: preventive || "Keep leaves dry, remove infected parts, rotate crops.",
     };
   } catch (error) {
     // Provide a graceful fallback so the UI still shows something meaningful.
